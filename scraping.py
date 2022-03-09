@@ -22,7 +22,8 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "last_modified": dt.datetime.now(),
+        "hemispheres": mars_hemispheres(browser)
     }
 
     # Stop webdriver and return data
@@ -82,6 +83,25 @@ def featured_image(browser):
 
     return img_url
 
+def mars_hemispheres(browser):
+    # Visit URL
+    url = 'https://marshemispheres.com/'
+    browser.visit(url)
+
+    # Parse HTML with soup
+    html = browser.html
+    img_soup = soup(html, 'html.parser')
+
+    # Scrape image and title elements
+    images = img_soup.find_all('img', class_='thumb')  #.get('src')
+    
+    titles = img_soup.find_all('h3')
+    titles = titles[:-1]
+
+    # Define list of dictionaries for return value
+    hemisphere_image_urls = [{"image": f"{url}{images[i].get('src')}", "title": titles[i].text} for i in range(len(images))]
+
+    return hemisphere_image_urls
 # ## Mars Facts
 
 def mars_facts():
@@ -98,6 +118,8 @@ def mars_facts():
 
     # Convert the dataframe into HTML format, add bootstrap
     return df.to_html()
+
+
 
 if __name__ == "__main__":
 
