@@ -92,11 +92,35 @@ def mars_hemispheres(browser):
     html = browser.html
     img_soup = soup(html, 'html.parser')
 
-    # Scrape image and title elements
-    images = img_soup.find_all('img', class_='thumb')  #.get('src')
-    
+    # Scrape image and title elements  
     titles = img_soup.find_all('h3')
     titles = titles[:-1]
+
+    # Find all possible hemisphere image links 
+    imgs = img_soup.find_all("a", class_="itemLink product-item")
+
+    # Extract href links 
+    hemi_links = [i.get('href') for i in imgs]
+
+    # Reduce to unique set
+    hemi_links = list(set(hemi_links[:-1]))
+
+    # Loop through the links and extract full images
+    images = []
+    for link in hemi_links:
+        #Build full url f-string
+        new_url = f"{url}{link}"
+        # Visit new url
+        browser.visit(new_url)
+        # Extract html w/ splinter
+        html = browser.html
+        # Optional delay 
+        browser.is_element_present_by_id('div.wide-image', wait_time=1)
+        # Parse html with soup
+        img_soup = soup(html, 'html.parser')
+        # Find full img url and append to list
+        full_img = img_soup.find('img', class_='wide-image')
+        images.append(full_img)
 
     # Define list of dictionaries for return value
     hemisphere_image_urls = [{"image": f"{url}{images[i].get('src')}", "title": titles[i].text} for i in range(len(images))]
